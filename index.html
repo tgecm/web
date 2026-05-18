@@ -767,9 +767,8 @@ let state = {
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 window.addEventListener('load', () => {
-  const initData = window.Telegram?.WebApp?.initData || '';
   // Block access if not opened from Telegram WebApp
-  if (!initData) {
+  if (!window.Telegram || !window.Telegram.WebApp) {
     showView('view-blocked');
     return;
   }
