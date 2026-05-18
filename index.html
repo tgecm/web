@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -730,6 +729,18 @@
     </div>
   </div>
 
+  <!-- ═══════════════ VIEW: BLOCKED (browser fallback) ═══════════════ -->
+  <div class="card view" id="view-blocked">
+    <div style="text-align:center; padding: 20px 0;">
+      <div style="font-size:48px; margin-bottom:16px;">🔒</div>
+      <div class="card-title" style="text-align:center;">Access Restricted</div>
+      <div class="card-sub" style="text-align:center;">
+        This page can only be accessed from the Telegram bot.<br><br>
+        Please open it via the <strong>Manage Web Login</strong> button in your bot's Admin Panel.
+      </div>
+    </div>
+  </div>
+
   <!-- ═══════════════ VIEW: SUCCESS ═══════════════ -->
   <div class="card view" id="view-success">
     <div class="success-icon" id="success-icon">✅</div>
@@ -756,11 +767,14 @@ let state = {
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 window.addEventListener('load', () => {
-  // Telegram WebApp init (graceful if not in Telegram)
-  if (window.Telegram && window.Telegram.WebApp) {
-    window.Telegram.WebApp.ready();
-    window.Telegram.WebApp.expand();
+  const initData = window.Telegram?.WebApp?.initData || '';
+  // Block access if not opened from Telegram WebApp
+  if (!initData) {
+    showView('view-blocked');
+    return;
   }
+  window.Telegram.WebApp.ready();
+  window.Telegram.WebApp.expand();
   checkAccountStatus();
 });
 
