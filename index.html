@@ -769,11 +769,10 @@ let state = {
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 window.addEventListener('load', () => {
-  // Extract initData from Telegram URL params (tgWebAppData) — always available
-  // when opened via WebAppInfo button, no SDK object needed
+  // Try to get initData from URL params first (Android/Desktop)
   const params = new URLSearchParams(window.location.search);
   const tgData = params.get('tgWebAppData');
-  const initData = tgData ? decodeURIComponent(tgData) : (window.Telegram?.WebApp?.initData || '');
+  let initData = tgData ? decodeURIComponent(tgData) : '';
 
   if (initData) {
     state.initData = initData;
@@ -781,9 +780,29 @@ window.addEventListener('load', () => {
     try { window.Telegram?.WebApp?.ready(); } catch(e) {}
     try { window.Telegram?.WebApp?.expand(); } catch(e) {}
     checkAccountStatus();
-  } else {
-    showView('view-blocked');
+    return;
   }
+
+  // If URL params not available, poll for native SDK (iOS)
+  let tries = 0;
+  function waitForTelegram() {
+    const d = window.Telegram?.WebApp?.initData;
+    if (d) {
+      state.initData = d;
+      state.botId = params.get('bot_id') || '';
+      try { window.Telegram.WebApp.ready(); } catch(e) {}
+      try { window.Telegram.WebApp.expand(); } catch(e) {}
+      checkAccountStatus();
+      return;
+    }
+    tries++;
+    if (tries >= 20) {
+      showView('view-blocked');
+      return;
+    }
+    setTimeout(waitForTelegram, 100);
+  }
+  waitForTelegram();
 });
 
 async function checkAccountStatus() {
