@@ -751,6 +751,7 @@
 
 </div><!-- /wrapper -->
 
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
 // ─── CONFIG ─────────────────────────────────────────────────────────────────
 const CONFIG = {
@@ -761,39 +762,48 @@ const CONFIG = {
 let state = {
   signedUp: false,
   email: '',
+  initData: '',
   timerInterval: null,
   successCallback: null,
 };
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 window.addEventListener('load', () => {
-  // Poll for Telegram WebApp SDK (injected by native WebView)
-  // Check up to 20 times (2 seconds) to handle timing differences across clients
-  let tries = 0;
-  function waitForTelegram() {
-    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
-      // Telegram WebApp SDK is ready
-      window.Telegram.WebApp.ready();
-      window.Telegram.WebApp.expand();
-      checkAccountStatus();
-      return;
-    }
-    tries++;
-    if (tries >= 20) {
-      // Still not detected — show blocked view
-      showView('view-blocked');
-      return;
-    }
-    setTimeout(waitForTelegram, 100);
+  // Try multiple methods to detect Telegram WebApp context
+  let initData = '';
+
+  // Method 1: Native SDK (injected by Telegram WebView)
+  if (window.Telegram?.WebApp?.initData) {
+    initData = window.Telegram.WebApp.initData;
   }
-  waitForTelegram();
+  // Method 2: SDK loaded from CDN
+  else if (window.Telegram?.WebApp?.initDataUnsafe) {
+    initData = window.Telegram.WebApp.initData;
+  }
+  // Method 3: Extract tgWebAppData from URL query params directly
+  if (!initData) {
+    const params = new URLSearchParams(window.location.search);
+    const tgData = params.get('tgWebAppData');
+    if (tgData) {
+      initData = decodeURIComponent(tgData);
+    }
+  }
+
+  if (initData) {
+    // We have Telegram init data — proceed
+    state.initData = initData;
+    try { window.Telegram?.WebApp?.ready(); } catch(e) {}
+    try { window.Telegram?.WebApp?.expand(); } catch(e) {}
+    checkAccountStatus();
+  } else {
+    showView('view-blocked');
+  }
 });
 
 async function checkAccountStatus() {
   try {
-    const initData = window.Telegram?.WebApp?.initData || '';
     const res = await fetch(`${CONFIG.API_BASE}/status`, {
-      headers: { 'X-Telegram-Init-Data': initData }
+      headers: { 'X-Telegram-Init-Data': state.initData }
     });
     const data = await res.json();
     state.signedUp = data.signed_up;
@@ -1093,12 +1103,11 @@ function isValidEmail(e) {
 }
 
 async function apiPost(path, body) {
-  const initData = window.Telegram?.WebApp?.initData || '';
   const res = await fetch(CONFIG.API_BASE + path, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Telegram-Init-Data': initData,
+      'X-Telegram-Init-Data': state.initData,
     },
     body: JSON.stringify(body),
   });
