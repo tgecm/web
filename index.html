@@ -767,14 +767,26 @@ let state = {
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 window.addEventListener('load', () => {
-  // Block access if not opened from Telegram WebApp
-  if (!window.Telegram || !window.Telegram.WebApp) {
-    showView('view-blocked');
-    return;
+  // Poll for Telegram WebApp SDK (injected by native WebView)
+  // Check up to 20 times (2 seconds) to handle timing differences across clients
+  let tries = 0;
+  function waitForTelegram() {
+    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
+      // Telegram WebApp SDK is ready
+      window.Telegram.WebApp.ready();
+      window.Telegram.WebApp.expand();
+      checkAccountStatus();
+      return;
+    }
+    tries++;
+    if (tries >= 20) {
+      // Still not detected — show blocked view
+      showView('view-blocked');
+      return;
+    }
+    setTimeout(waitForTelegram, 100);
   }
-  window.Telegram.WebApp.ready();
-  window.Telegram.WebApp.expand();
-  checkAccountStatus();
+  waitForTelegram();
 });
 
 async function checkAccountStatus() {
