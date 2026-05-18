@@ -499,8 +499,8 @@
 
   <div class="brand">
     <div class="brand-icon">🛍</div>
-    <h1>TeleShop</h1>
-    <p>Web Panel Access</p>
+    <h1 id="brand-name">TeleShop</h1>
+    <p id="brand-sub">Web Panel Access</p>
   </div>
 
   <!-- ═══════════════ VIEW: LOADING ═══════════════ -->
@@ -808,6 +808,11 @@ async function checkAccountStatus() {
     const data = await res.json();
     state.signedUp = data.signed_up;
     state.email = data.email || '';
+    // Show bot name in the header
+    if (data.bot_name) {
+      document.getElementById('brand-name').textContent = data.bot_name;
+      document.getElementById('brand-sub').textContent = 'Web Panel';
+    }
     if (state.signedUp) {
       showLoggedIn();
     } else {
