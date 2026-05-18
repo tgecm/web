@@ -1,1 +1,1084 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TeleShop Web Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #161920;
+    --card: #1e2230;
+    --border: rgba(255,255,255,0.07);
+    --accent: #5b9cf6;
+    --accent-glow: rgba(91,156,246,0.18);
+    --accent2: #9d6fff;
+    --text: #e8eaf0;
+    --muted: #6b7080;
+    --success: #4ade80;
+    --error: #f87171;
+    --warn: #facc15;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-x: hidden;
+  }
+
+  /* animated background mesh */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 20% 20%, rgba(91,156,246,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 60% at 80% 80%, rgba(157,111,255,0.06) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 420px;
+  }
+
+  /* logo / brand */
+  .brand {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .brand-icon {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    margin-bottom: 12px;
+    box-shadow: 0 0 30px var(--accent-glow);
+  }
+
+  .brand h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+
+  .brand p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* card */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px 28px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+
+  .card-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    margin-bottom: 6px;
+  }
+
+  .card-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+
+  /* tabs */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 28px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 8px 0;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .tab-btn.active {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(91,156,246,0.35);
+  }
+
+  /* form */
+  .field {
+    margin-bottom: 16px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 7px;
+  }
+
+  .input-wrap {
+    position: relative;
+  }
+
+  .input-wrap input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 44px 12px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .input-wrap input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  .input-wrap input::placeholder { color: var(--muted); }
+
+  .input-wrap .eye-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 16px;
+    padding: 2px;
+    line-height: 1;
+    transition: color 0.2s;
+  }
+
+  .input-wrap .eye-btn:hover { color: var(--text); }
+
+  .pw-hint {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 5px;
+  }
+
+  /* strength bar */
+  .strength-bar {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+  }
+
+  .strength-seg {
+    height: 3px;
+    flex: 1;
+    border-radius: 2px;
+    background: var(--border);
+    transition: background 0.3s;
+  }
+
+  /* code input row */
+  .code-row {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .code-row input {
+    flex: 1;
+    letter-spacing: 3px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 600;
+    padding: 12px 10px;
+  }
+
+  .send-code-btn {
+    padding: 12px 14px;
+    border: none;
+    border-radius: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+    min-width: 90px;
+  }
+
+  .send-code-btn:hover:not(:disabled) {
+    background: var(--accent-glow);
+    border-color: var(--accent);
+  }
+
+  .send-code-btn:disabled {
+    color: var(--muted);
+    cursor: not-allowed;
+  }
+
+  /* primary button */
+  .btn-primary {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px rgba(91,156,246,0.3);
+    letter-spacing: 0.2px;
+  }
+
+  .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* spinner inside button */
+  .btn-primary .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* alert box */
+  .alert {
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-size: 13px;
+    margin-bottom: 16px;
+    display: none;
+    line-height: 1.5;
+    border: 1px solid transparent;
+  }
+
+  .alert.show { display: block; }
+  .alert.success { background: rgba(74,222,128,0.1); border-color: rgba(74,222,128,0.25); color: var(--success); }
+  .alert.error   { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.25); color: var(--error); }
+  .alert.info    { background: rgba(91,156,246,0.1);  border-color: rgba(91,156,246,0.25);  color: var(--accent); }
+
+  /* divider */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* link button */
+  .link-btn {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    padding: 0;
+  }
+
+  .link-btn:hover { color: var(--accent2); }
+
+  /* step indicator */
+  .steps {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 24px;
+  }
+
+  .step-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: all 0.3s;
+  }
+
+  .step-dot.done { background: var(--success); }
+  .step-dot.active { background: var(--accent); width: 24px; border-radius: 4px; }
+
+  /* timer */
+  .timer {
+    font-size: 12px;
+    color: var(--warn);
+    margin-top: 6px;
+    display: none;
+  }
+
+  .timer.show { display: block; }
+
+  /* view sections */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* success state */
+  .success-icon {
+    text-align: center;
+    font-size: 48px;
+    margin-bottom: 12px;
+    animation: pop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  @keyframes pop {
+    from { transform: scale(0.5); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+
+  /* footer */
+  .footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* --- ALREADY SIGNED UP view --- */
+  .account-info {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .account-info .av {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .account-info .info-text .email {
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .account-info .info-text .label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  .action-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .action-card:hover { border-color: var(--accent); background: rgba(91,156,246,0.05); }
+
+  .action-card .ac-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .action-card .ac-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    background: var(--card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  .action-card .ac-title {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .action-card .ac-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .action-card .ac-arrow {
+    color: var(--muted);
+    font-size: 18px;
+  }
+
+  /* Slide animations */
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(18px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .card { animation: slideIn 0.3s ease; }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <div class="brand">
+    <div class="brand-icon">🛍</div>
+    <h1>TeleShop</h1>
+    <p>Web Panel Access</p>
+  </div>
+
+  <!-- ═══════════════ VIEW: LOADING ═══════════════ -->
+  <div class="card view active" id="view-loading">
+    <div style="text-align:center; padding: 20px 0;">
+      <div style="width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 16px;"></div>
+      <p style="color:var(--muted);font-size:14px;">Checking account…</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════ VIEW: ALREADY SIGNED UP ═══════════════ -->
+  <div class="card view" id="view-loggedin">
+    <div class="card-title">Your Web Panel</div>
+    <div class="card-sub">Manage your web panel access below.</div>
+
+    <div class="account-info">
+      <div class="av">👤</div>
+      <div class="info-text">
+        <div class="email" id="display-email">user@example.com</div>
+        <div class="label">Web Panel Account</div>
+      </div>
+    </div>
+
+    <div id="alert-loggedin" class="alert"></div>
+
+    <div class="action-card" onclick="showView('view-changepw')">
+      <div class="ac-left">
+        <div class="ac-icon">🔑</div>
+        <div>
+          <div class="ac-title">Change Password</div>
+          <div class="ac-sub">Update your current password</div>
+        </div>
+      </div>
+      <span class="ac-arrow">›</span>
+    </div>
+
+    <div class="action-card" onclick="startForgot()">
+      <div class="ac-left">
+        <div class="ac-icon">📧</div>
+        <div>
+          <div class="ac-title">Forgot Password</div>
+          <div class="ac-sub">Reset via email confirmation code</div>
+        </div>
+      </div>
+      <span class="ac-arrow">›</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════ VIEW: SIGN UP ═══════════════ -->
+  <div class="card view" id="view-signup">
+    <div class="steps">
+      <div class="step-dot active" id="su-dot1"></div>
+      <div class="step-dot" id="su-dot2"></div>
+      <div class="step-dot" id="su-dot3"></div>
+    </div>
+
+    <div id="su-step1">
+      <div class="card-title">Create Account</div>
+      <div class="card-sub">Enter your email to get a confirmation code.</div>
+
+      <div id="alert-signup" class="alert"></div>
+
+      <div class="field">
+        <label>Email Address</label>
+        <div class="input-wrap">
+          <input type="email" id="su-email" placeholder="you@example.com" autocomplete="email"/>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="su-send-btn" onclick="suSendCode()">Send Confirmation Code</button>
+    </div>
+
+    <div id="su-step2" style="display:none;">
+      <div class="card-title">Check Your Inbox</div>
+      <div class="card-sub">Enter the 6-digit code sent to <strong id="su-email-label"></strong></div>
+
+      <div id="alert-signup2" class="alert"></div>
+
+      <div class="field">
+        <label>Confirmation Code</label>
+        <div class="code-row">
+          <div class="input-wrap" style="flex:1;">
+            <input type="text" id="su-code" placeholder="000000" maxlength="6" inputmode="numeric"/>
+          </div>
+          <button class="send-code-btn" id="su-resend-btn" onclick="suResend()">Resend</button>
+        </div>
+        <div class="timer" id="su-timer"></div>
+      </div>
+
+      <button class="btn-primary" onclick="suVerifyCode()">Verify Code</button>
+      <div style="text-align:center; margin-top:14px;">
+        <button class="link-btn" onclick="suBack()">← Use different email</button>
+      </div>
+    </div>
+
+    <div id="su-step3" style="display:none;">
+      <div class="card-title">Set Your Password</div>
+      <div class="card-sub">Choose a secure password for your web panel.</div>
+
+      <div id="alert-signup3" class="alert"></div>
+
+      <div class="field">
+        <label>Password</label>
+        <div class="input-wrap">
+          <input type="password" id="su-pw1" placeholder="At least 6 characters" oninput="updateStrength(this.value)"/>
+          <button class="eye-btn" onclick="toggleEye('su-pw1',this)" tabindex="-1">👁</button>
+        </div>
+        <div class="strength-bar">
+          <div class="strength-seg" id="seg1"></div>
+          <div class="strength-seg" id="seg2"></div>
+          <div class="strength-seg" id="seg3"></div>
+          <div class="strength-seg" id="seg4"></div>
+        </div>
+        <div class="pw-hint" id="pw-hint-text">Minimum 6 characters</div>
+      </div>
+
+      <div class="field">
+        <label>Confirm Password</label>
+        <div class="input-wrap">
+          <input type="password" id="su-pw2" placeholder="Repeat password"/>
+          <button class="eye-btn" onclick="toggleEye('su-pw2',this)" tabindex="-1">👁</button>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="suSetPassword()">Create Account</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════ VIEW: CHANGE PASSWORD ═══════════════ -->
+  <div class="card view" id="view-changepw">
+    <div class="card-title">Change Password</div>
+    <div class="card-sub">Enter your current password and choose a new one.</div>
+
+    <div id="alert-changepw" class="alert"></div>
+
+    <div class="field">
+      <label>Current Password</label>
+      <div class="input-wrap">
+        <input type="password" id="cp-old" placeholder="Current password"/>
+        <button class="eye-btn" onclick="toggleEye('cp-old',this)" tabindex="-1">👁</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>New Password</label>
+      <div class="input-wrap">
+        <input type="password" id="cp-new1" placeholder="At least 6 characters"/>
+        <button class="eye-btn" onclick="toggleEye('cp-new1',this)" tabindex="-1">👁</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Confirm New Password</label>
+      <div class="input-wrap">
+        <input type="password" id="cp-new2" placeholder="Repeat new password"/>
+        <button class="eye-btn" onclick="toggleEye('cp-new2',this)" tabindex="-1">👁</button>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="doChangePw()">Update Password</button>
+    <div style="text-align:center; margin-top:14px;">
+      <button class="link-btn" onclick="showLoggedIn()">← Back</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════ VIEW: FORGOT PASSWORD ═══════════════ -->
+  <div class="card view" id="view-forgot">
+    <div class="steps">
+      <div class="step-dot active" id="fp-dot1"></div>
+      <div class="step-dot" id="fp-dot2"></div>
+    </div>
+
+    <div id="fp-step1">
+      <div class="card-title">Reset Password</div>
+      <div class="card-sub">We'll send a confirmation code to your registered email.</div>
+
+      <div id="alert-forgot" class="alert"></div>
+
+      <div class="field">
+        <label>Registered Email</label>
+        <div class="input-wrap">
+          <input type="email" id="fp-email" placeholder="Your registered email"/>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="fpSendCode()">Send Reset Code</button>
+      <div style="text-align:center; margin-top:14px;">
+        <button class="link-btn" onclick="showLoggedIn()">← Back</button>
+      </div>
+    </div>
+
+    <div id="fp-step2" style="display:none;">
+      <div class="card-title">Enter Code & New Password</div>
+      <div class="card-sub">Code sent to <strong id="fp-email-label"></strong></div>
+
+      <div id="alert-forgot2" class="alert"></div>
+
+      <div class="field">
+        <label>Confirmation Code</label>
+        <div class="code-row">
+          <div class="input-wrap" style="flex:1;">
+            <input type="text" id="fp-code" placeholder="000000" maxlength="6" inputmode="numeric"/>
+          </div>
+          <button class="send-code-btn" id="fp-resend-btn" onclick="fpResend()">Resend</button>
+        </div>
+        <div class="timer" id="fp-timer"></div>
+      </div>
+
+      <div class="field">
+        <label>New Password</label>
+        <div class="input-wrap">
+          <input type="password" id="fp-pw1" placeholder="At least 6 characters"/>
+          <button class="eye-btn" onclick="toggleEye('fp-pw1',this)" tabindex="-1">👁</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Confirm New Password</label>
+        <div class="input-wrap">
+          <input type="password" id="fp-pw2" placeholder="Repeat password"/>
+          <button class="eye-btn" onclick="toggleEye('fp-pw2',this)" tabindex="-1">👁</button>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="fpResetPw()">Reset Password</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════ VIEW: SUCCESS ═══════════════ -->
+  <div class="card view" id="view-success">
+    <div class="success-icon" id="success-icon">✅</div>
+    <div class="card-title" id="success-title" style="text-align:center;">Done!</div>
+    <div class="card-sub" id="success-msg" style="text-align:center; margin-bottom:24px;"></div>
+    <button class="btn-primary" onclick="successBack()">Got it</button>
+  </div>
+
+</div><!-- /wrapper -->
+
+<script>
+// ─── CONFIG ─────────────────────────────────────────────────────────────────
+const CONFIG = {
+  API_BASE: 'https://api.telegramecommerce.shop/api/webpanel',
+};
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let state = {
+  signedUp: false,
+  email: '',
+  timerInterval: null,
+  successCallback: null,
+};
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  // Telegram WebApp init (graceful if not in Telegram)
+  if (window.Telegram && window.Telegram.WebApp) {
+    window.Telegram.WebApp.ready();
+    window.Telegram.WebApp.expand();
+  }
+  checkAccountStatus();
+});
+
+async function checkAccountStatus() {
+  try {
+    const initData = window.Telegram?.WebApp?.initData || '';
+    const res = await fetch(`${CONFIG.API_BASE}/status`, {
+      headers: { 'X-Telegram-Init-Data': initData }
+    });
+    const data = await res.json();
+    state.signedUp = data.signed_up;
+    state.email = data.email || '';
+    if (state.signedUp) {
+      showLoggedIn();
+    } else {
+      showView('view-signup');
+    }
+  } catch(e) {
+    showView('view-signup');
+  }
+}
+
+// ─── VIEW HELPERS ─────────────────────────────────────────────────────────────
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function showLoggedIn() {
+  document.getElementById('display-email').textContent = state.email || 'user@example.com';
+  clearAlert('alert-loggedin');
+  showView('view-loggedin');
+}
+
+function startForgot() {
+  // Pre-fill email
+  document.getElementById('fp-email').value = state.email || '';
+  clearAlert('alert-forgot');
+  clearAlert('alert-forgot2');
+  document.getElementById('fp-step1').style.display = '';
+  document.getElementById('fp-step2').style.display = 'none';
+  setDot(['fp-dot1','fp-dot2'], 0);
+  showView('view-forgot');
+}
+
+// ─── SIGN UP FLOW ─────────────────────────────────────────────────────────────
+function suBack() {
+  clearAlert('alert-signup');
+  document.getElementById('su-step1').style.display = '';
+  document.getElementById('su-step2').style.display = 'none';
+  document.getElementById('su-step3').style.display = 'none';
+  setDot(['su-dot1','su-dot2','su-dot3'], 0);
+}
+
+async function suSendCode() {
+  const email = document.getElementById('su-email').value.trim();
+  if (!isValidEmail(email)) return showAlert('alert-signup', 'Please enter a valid email address.', 'error');
+
+  setBtnLoading('su-send-btn', true);
+  clearAlert('alert-signup');
+
+  try {
+    const res = await apiPost('/send-code', { email, flow: 'signup' });
+    if (res.ok) {
+      state.email = email;
+      document.getElementById('su-email-label').textContent = email;
+      document.getElementById('su-step1').style.display = 'none';
+      document.getElementById('su-step2').style.display = '';
+      setDot(['su-dot1','su-dot2','su-dot3'], 1);
+      startTimer('su-timer', 'su-resend-btn', 60);
+    } else {
+      showAlert('alert-signup', res.message || 'Failed to send code. Try again.', 'error');
+    }
+  } catch(e) {
+    showAlert('alert-signup', 'Network error. Please try again.', 'error');
+  }
+  setBtnLoading('su-send-btn', false);
+}
+
+async function suResend() {
+  clearAlert('alert-signup2');
+  document.getElementById('su-resend-btn').disabled = true;
+
+  try {
+    await apiPost('/send-code', { email: state.email, flow: 'signup' });
+    startTimer('su-timer', 'su-resend-btn', 60);
+  } catch(e) {
+    showAlert('alert-signup2', 'Failed to resend. Try again.', 'error');
+    document.getElementById('su-resend-btn').disabled = false;
+  }
+}
+
+async function suVerifyCode() {
+  const code = document.getElementById('su-code').value.trim();
+  if (code.length !== 6) return showAlert('alert-signup2', 'Enter the 6-digit code.', 'error');
+  clearAlert('alert-signup2');
+
+  try {
+    const res = await apiPost('/verify-code', { email: state.email, code, flow: 'signup' });
+    if (res.ok) {
+      document.getElementById('su-step2').style.display = 'none';
+      document.getElementById('su-step3').style.display = '';
+      setDot(['su-dot1','su-dot2','su-dot3'], 2);
+    } else {
+      showAlert('alert-signup2', res.message || 'Incorrect code.', 'error');
+    }
+  } catch(e) {
+    showAlert('alert-signup2', 'Network error.', 'error');
+  }
+}
+
+async function suSetPassword() {
+  const pw1 = document.getElementById('su-pw1').value;
+  const pw2 = document.getElementById('su-pw2').value;
+  clearAlert('alert-signup3');
+
+  if (pw1.length < 6) return showAlert('alert-signup3', 'Password must be at least 6 characters.', 'error');
+  if (pw1 !== pw2) return showAlert('alert-signup3', 'Passwords do not match.', 'error');
+
+  try {
+    const res = await apiPost('/signup', { email: state.email, password: pw1 });
+    if (res.ok) {
+      state.signedUp = true;
+      showSuccess('🎉', 'Account Created!', `Your web panel is ready. Log in with ${state.email}.`, showLoggedIn);
+    } else {
+      showAlert('alert-signup3', res.message || 'Failed to create account.', 'error');
+    }
+  } catch(e) {
+    showAlert('alert-signup3', 'Network error.', 'error');
+  }
+}
+
+// ─── CHANGE PASSWORD FLOW ─────────────────────────────────────────────────────
+async function doChangePw() {
+  const oldPw  = document.getElementById('cp-old').value;
+  const newPw1 = document.getElementById('cp-new1').value;
+  const newPw2 = document.getElementById('cp-new2').value;
+  clearAlert('alert-changepw');
+
+  if (!oldPw) return showAlert('alert-changepw', 'Enter your current password.', 'error');
+  if (newPw1.length < 6) return showAlert('alert-changepw', 'New password must be at least 6 characters.', 'error');
+  if (newPw1 !== newPw2) return showAlert('alert-changepw', 'New passwords do not match.', 'error');
+
+  try {
+    const res = await apiPost('/change-password', { email: state.email, old_password: oldPw, new_password: newPw1 });
+    if (res.ok) {
+      showSuccess('🔑', 'Password Changed', 'Your password has been updated successfully.', showLoggedIn);
+    } else {
+      showAlert('alert-changepw', res.message || 'Current password is incorrect.', 'error');
+    }
+  } catch(e) {
+    showAlert('alert-changepw', 'Network error.', 'error');
+  }
+}
+
+// ─── FORGOT PASSWORD FLOW ─────────────────────────────────────────────────────
+async function fpSendCode() {
+  const email = document.getElementById('fp-email').value.trim();
+  if (!isValidEmail(email)) return showAlert('alert-forgot', 'Enter a valid email address.', 'error');
+  clearAlert('alert-forgot');
+
+  try {
+    const res = await apiPost('/send-code', { email, flow: 'forgot' });
+    if (res.ok) {
+      state.email = email;
+      document.getElementById('fp-email-label').textContent = email;
+      document.getElementById('fp-step1').style.display = 'none';
+      document.getElementById('fp-step2').style.display = '';
+      setDot(['fp-dot1','fp-dot2'], 1);
+      startTimer('fp-timer', 'fp-resend-btn', 60);
+    } else {
+      showAlert('alert-forgot', res.message || 'Could not send reset code.', 'error');
+    }
+  } catch(e) {
+    showAlert('alert-forgot', 'Network error.', 'error');
+  }
+}
+
+async function fpResend() {
+  clearAlert('alert-forgot2');
+  document.getElementById('fp-resend-btn').disabled = true;
+  try {
+    await apiPost('/send-code', { email: state.email, flow: 'forgot' });
+    startTimer('fp-timer', 'fp-resend-btn', 60);
+  } catch(e) {
+    document.getElementById('fp-resend-btn').disabled = false;
+  }
+}
+
+async function fpResetPw() {
+  const code = document.getElementById('fp-code').value.trim();
+  const pw1  = document.getElementById('fp-pw1').value;
+  const pw2  = document.getElementById('fp-pw2').value;
+  clearAlert('alert-forgot2');
+
+  if (code.length !== 6) return showAlert('alert-forgot2', 'Enter the 6-digit code.', 'error');
+  if (pw1.length < 6)    return showAlert('alert-forgot2', 'Password must be at least 6 characters.', 'error');
+  if (pw1 !== pw2)        return showAlert('alert-forgot2', 'Passwords do not match.', 'error');
+
+  try {
+    const res = await apiPost('/reset-password', { email: state.email, code, new_password: pw1 });
+    if (res.ok) {
+      showSuccess('✅', 'Password Reset', 'Your password has been reset. You can now log in.', showLoggedIn);
+    } else {
+      showAlert('alert-forgot2', res.message || 'Reset failed. Check the code.', 'error');
+    }
+  } catch(e) {
+    showAlert('alert-forgot2', 'Network error.', 'error');
+  }
+}
+
+// ─── SUCCESS VIEW ─────────────────────────────────────────────────────────────
+function showSuccess(icon, title, msg, callback) {
+  document.getElementById('success-icon').textContent = icon;
+  document.getElementById('success-title').textContent = title;
+  document.getElementById('success-msg').textContent = msg;
+  state.successCallback = callback;
+  showView('view-success');
+}
+
+function successBack() {
+  if (state.successCallback) state.successCallback();
+  else showLoggedIn();
+}
+
+// ─── UTILITIES ────────────────────────────────────────────────────────────────
+function showAlert(id, msg, type) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = `alert ${type} show`;
+}
+
+function clearAlert(id) {
+  const el = document.getElementById(id);
+  if (el) { el.className = 'alert'; el.textContent = ''; }
+}
+
+function setDot(ids, activeIndex) {
+  ids.forEach((id, i) => {
+    const d = document.getElementById(id);
+    d.className = 'step-dot';
+    if (i < activeIndex) d.classList.add('done');
+    else if (i === activeIndex) d.classList.add('active');
+  });
+}
+
+function startTimer(timerId, btnId, seconds) {
+  clearInterval(state.timerInterval);
+  const timerEl = document.getElementById(timerId);
+  const btnEl   = document.getElementById(btnId);
+  btnEl.disabled = true;
+  timerEl.classList.add('show');
+
+  let remaining = seconds;
+  timerEl.textContent = `Resend in ${remaining}s`;
+  state.timerInterval = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(state.timerInterval);
+      timerEl.classList.remove('show');
+      btnEl.disabled = false;
+    } else {
+      timerEl.textContent = `Resend in ${remaining}s`;
+    }
+  }, 1000);
+}
+
+function toggleEye(inputId, btn) {
+  const inp = document.getElementById(inputId);
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+  else { inp.type = 'password'; btn.textContent = '👁'; }
+}
+
+function updateStrength(val) {
+  const segs = ['seg1','seg2','seg3','seg4'];
+  const colors = ['#f87171','#fb923c','#facc15','#4ade80'];
+  let score = 0;
+  if (val.length >= 6) score++;
+  if (val.length >= 10) score++;
+  if (/[A-Z]/.test(val) && /[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+
+  const hints = ['Too short','Weak','Fair','Strong','Very strong'];
+  document.getElementById('pw-hint-text').textContent = val.length === 0 ? 'Minimum 6 characters' : hints[score];
+
+  segs.forEach((s, i) => {
+    document.getElementById(s).style.background = i < score ? colors[Math.min(score-1, 3)] : 'var(--border)';
+  });
+}
+
+function setBtnLoading(id, loading) {
+  const btn = document.getElementById(id);
+  if (loading) {
+    btn._orig = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner"></span>Sending…';
+    btn.disabled = true;
+  } else {
+    btn.innerHTML = btn._orig || btn.innerHTML;
+    btn.disabled = false;
+  }
+}
+
+function isValidEmail(e) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+}
+
+async function apiPost(path, body) {
+  const initData = window.Telegram?.WebApp?.initData || '';
+  const res = await fetch(CONFIG.API_BASE + path, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Telegram-Init-Data': initData,
+    },
+    body: JSON.stringify(body),
+  });
+  return res.json();
+}
+</script>
+</body>
+</html>
