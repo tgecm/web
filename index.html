@@ -751,7 +751,6 @@
 
 </div><!-- /wrapper -->
 
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
 // ─── CONFIG ─────────────────────────────────────────────────────────────────
 const CONFIG = {
@@ -770,32 +769,15 @@ let state = {
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 window.addEventListener('load', () => {
-  // Try multiple methods to detect Telegram WebApp context
-  let initData = '';
-
-  // Method 1: Native SDK (injected by Telegram WebView)
-  if (window.Telegram?.WebApp?.initData) {
-    initData = window.Telegram.WebApp.initData;
-  }
-  // Method 2: SDK loaded from CDN
-  else if (window.Telegram?.WebApp?.initDataUnsafe) {
-    initData = window.Telegram.WebApp.initData;
-  }
-  // Method 3: Extract tgWebAppData from URL query params directly
-  if (!initData) {
-    const params = new URLSearchParams(window.location.search);
-    const tgData = params.get('tgWebAppData');
-    if (tgData) {
-      initData = decodeURIComponent(tgData);
-    }
-  }
+  // Extract initData from Telegram URL params (tgWebAppData) — always available
+  // when opened via WebAppInfo button, no SDK object needed
+  const params = new URLSearchParams(window.location.search);
+  const tgData = params.get('tgWebAppData');
+  const initData = tgData ? decodeURIComponent(tgData) : (window.Telegram?.WebApp?.initData || '');
 
   if (initData) {
-    // We have Telegram init data — proceed
     state.initData = initData;
-    // Extract bot_id from URL if present (passed by Teleshop bot)
-    const urlParams = new URLSearchParams(window.location.search);
-    state.botId = urlParams.get('bot_id') || '';
+    state.botId = params.get('bot_id') || '';
     try { window.Telegram?.WebApp?.ready(); } catch(e) {}
     try { window.Telegram?.WebApp?.expand(); } catch(e) {}
     checkAccountStatus();
@@ -806,11 +788,11 @@ window.addEventListener('load', () => {
 
 async function checkAccountStatus() {
   try {
-    const url = state.botId
-      ? `${CONFIG.API_BASE}/status?bot_id=${state.botId}`
-      : `${CONFIG.API_BASE}/status`;
-    const res = await fetch(url, {
-      headers: { 'X-Telegram-Init-Data': state.initData }
+    const res = await fetch(`${CONFIG.API_BASE}/status`, {
+      headers: {
+        'X-Telegram-Init-Data': state.initData,
+        'X-Bot-Id': state.botId,
+      }
     });
     const data = await res.json();
     state.signedUp = data.signed_up;
@@ -879,10 +861,10 @@ async function suSendCode() {
       setDot(['su-dot1','su-dot2','su-dot3'], 1);
       startTimer('su-timer', 'su-resend-btn', 60);
     } else {
-      showAlert('alert-signup', res.message || 'Failed to send code. Try again.', 'error');
+      showAlert('alert-signup', res.message || res.detail || 'Failed to send code. Try again.', 'error');
     }
   } catch(e) {
-    showAlert('alert-signup', 'Network error. Please try again.', 'error');
+    showAlert('alert-signup', 'Network error: ' + e.message, 'error');
   }
   setBtnLoading('su-send-btn', false);
 }
@@ -1123,7 +1105,13 @@ async function apiPost(path, body) {
     },
     body: JSON.stringify(body),
   });
-  return res.json();
+  const data = await res.json();
+  if (!res.ok) {
+    const err = new Error(data.message || data.detail || 'Request failed');
+    err.data = data;
+    throw err;
+  }
+  return data;
 }
 </script>
 </body>
